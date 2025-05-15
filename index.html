@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Diamond Market Chart</title>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -65,17 +66,7 @@
   </div>
 
   <script>
-    // Sample data – replace this with real parsed CSV if needed
-    const rawData = [
-      { timeOpen: '2013-12-20', close: 12000, marketCap: 1_000_000 },
-      { timeOpen: '2014-01-10', close: 13000, marketCap: 1_500_000 },
-      { timeOpen: '2015-01-01', close: 11500, marketCap: 1_300_000 },
-      { timeOpen: '2016-01-01', close: 14500, marketCap: 1_800_000 },
-      { timeOpen: '2017-01-01', close: 17500, marketCap: 2_000_000 },
-      { timeOpen: '2025-04-17', close: 18500, marketCap: 2_500_000 }
-    ];
-
-    const chartDiv = document.getElementById('chart');
+    let rawData = [];
 
     function updateChart() {
       const valueType = document.getElementById('valueType').value;
@@ -89,7 +80,7 @@
 
       const trace = {
         x: filtered.map(d => d.timeOpen),
-        y: filtered.map(d => d[valueType]),
+        y: filtered.map(d => parseFloat(d[valueType])),
         type: 'scatter',
         mode: 'lines+markers',
         marker: { color: '#2b7cff' },
@@ -109,16 +100,24 @@
         }
       };
 
-      Plotly.newPlot(chartDiv, [trace], layout, { responsive: true });
+      Plotly.newPlot('chart', [trace], layout, { responsive: true });
     }
 
-    // Hook up listeners
+    // Load CSV and parse it
+    Papa.parse('data.csv', {
+      download: true,
+      header: true,
+      dynamicTyping: true,
+      complete: function(results) {
+        rawData = results.data.filter(d => d.timeOpen && d.close && d.marketCap);
+        updateChart();
+      }
+    });
+
+    // Add event listeners
     document.getElementById('valueType').addEventListener('change', updateChart);
     document.getElementById('startDate').addEventListener('change', updateChart);
     document.getElementById('endDate').addEventListener('change', updateChart);
-
-    // Initial chart render
-    updateChart();
   </script>
 </body>
 </html>
