@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Diamond Market Chart</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+      max-width: 960px;
+    }
+    #chart {
+      width: 100%;
+      height: 600px;
+    }
+    .filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 20px;
+      align-items: center;
+    }
+    label {
+      font-weight: bold;
+    }
+    select, input {
+      padding: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Diamond Market Data (Interactive Chart)</h2>
+
+  <div class="filter-group">
+    <label for="valueType">Value:</label>
+    <select id="valueType">
+      <option value="close">Price</option>
+      <option value="marketcap">Market Cap</option>
+    </select>
+
+    <label for="country">Country:</label>
+    <select id="country">
+      <option value="All">All</option>
+    </select>
+
+    <label for="startDate">From:</label>
+    <input type="date" id="startDate" value="2013-12-20">
+
+    <label for="endDate">To:</label>
+    <input type="date" id="endDate" value="2025-04-17">
+  </div>
+
+  <div id="chart"></div>
+
+  <script>
+    let allData = [];
+
+    async function loadData() {
+      const response = await fetch('data.csv');
+      const text = await response.text();
+      const rows = text.trim().split('\n').map(row => row.split(','));
+      const headers = rows[0];
+      const data = rows.slice(1).map(row => {
+        let obj = {};
+        headers.forEach((h, i) => obj[h] = isNaN(row[i]) || h === 'country' || h === 'date' ? row[i] : parseFloat(row[i]));
+        obj.date = new Date(obj.date);
+        return obj;
+      });
+
+      allData = data;
+
+      // Populate countries dynamically
+      const countrySet = new Set(data.map(d => d.country));
+      const countrySelect = document.getElementById('country');
+      countrySet.forEach(country => {
+        const option = document.createElement('option');
+        option.value = country;
+        option.textContent = country;
+        countrySelect.appendChild(option);
+      });
+
+      updateChart();
+    }
+
+    function updateChart() {
+      const valueType = document.getElementById('valueType').value;
+      const selectedCountry = document.getElementById('country').value;
+      const startDate = new Date(document.getElementById('startDate').value);
+      const endDate = new Date(document.getElementById('endDate').value);
+
+      const filtered = allData.filter(d => {
+        const inDateRange = d.date >= startDate && d.date <= endDate;
+        const matchesCountry = selectedCountry === 'All' || d.country === selectedCountry;
+        return inDateRange && matchesCountry;
+      });
+
+      const trace = {
+        x: filtered.map(d => d.date),
+        y: filtered.map(d => d[valueType]),
+        type: 'scatter',
+        mode: 'lines+markers',
+        line: { color: 'royalblue' },
+        name: valueType
+      };
+
+      const layout = {
+        title: `${valueType === 'close' ? 'Price' : 'Market Cap'} over Time`,
+        xaxis: {
+          title: 'Date',
+          type: 'date'
+        },
+        yaxis: {
+          title: valueType === 'close' ? 'Price (USD)' : 'Market Cap (USD)',
+          rangemode: 'tozero'
+        },
+        margin: { t: 50, l: 60, r: 30, b: 60 }
+      };
+
+      Plotly.newPlot('chart', [trace], layout, { responsive: true });
+    }
+
+    // Hook up filters
+    document.getElementById('valueType').addEventListener('change', updateChart);
+    document.getElementById('country').addEventListener('change', updateChart);
+    document.getElementById('startDate').addEventListener('change', updateChart);
+    document.getElementById('endDate').addEventListener('change', updateChart);
+
+    loadData();
+  </script>
+
+</body>
+</html>
