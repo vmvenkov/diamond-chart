@@ -83,9 +83,11 @@
         y: filtered.map(d => parseFloat(d[valueType])),
         type: 'scatter',
         mode: 'lines',
-        marker: { color: '#2b7cff' },
-        line: { shape: 'spline' },
-        name: valueType === 'close' ? 'Price (USD)' : 'Market Cap (USD)'
+        line: { shape: 'spline', color: '#2b7cff' },
+        name: valueType === 'close' ? 'Price (USD)' : 'Market Cap (USD)',
+        hovertemplate:
+          'Date: %{x}<br>' +
+          (valueType === 'close' ? 'Price' : 'Market Cap') + ': %{y:$,.2f}<extra></extra>'
       };
 
       const layout = {
