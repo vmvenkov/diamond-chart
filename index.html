@@ -86,8 +86,9 @@
         line: { shape: 'spline', color: '#2b7cff' },
         name: valueType === 'close' ? 'Price (USD)' : 'Market Cap (USD)',
         hovertemplate:
-          'Date: %{x}<br>' +
-          (valueType === 'close' ? 'Price' : 'Market Cap') + ': %{y:$,.2f}<extra></extra>'
+                    '%{x|%d %b %Y}<br>' +
+                    (valueType === 'close' ? '💰 %{y:$,.2f}' : '📊 %{y:$,.2f}') + '<extra></extra>'
+
       };
 
       const layout = {
