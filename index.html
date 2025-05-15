@@ -82,7 +82,7 @@
         x: filtered.map(d => d.timeOpen),
         y: filtered.map(d => parseFloat(d[valueType])),
         type: 'scatter',
-        mode: 'lines+markers',
+        mode: 'lines',
         marker: { color: '#2b7cff' },
         line: { shape: 'spline' },
         name: valueType === 'close' ? 'Price (USD)' : 'Market Cap (USD)'
