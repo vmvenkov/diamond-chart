@@ -6,13 +6,18 @@
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+    }
     body {
       font-family: 'Segoe UI', sans-serif;
       background-color: #f5f5f5;
-      margin: 0;
-      padding: 20px;
       display: flex;
       justify-content: center;
+      align-items: center;
     }
     .container {
       background: #fff;
@@ -21,6 +26,7 @@
       box-shadow: 0 0 12px rgba(0,0,0,0.1);
       max-width: 1000px;
       width: 100%;
+      box-sizing: border-box;
     }
     .filters {
       display: flex;
@@ -38,6 +44,14 @@
     h2 {
       margin-top: 0;
       font-size: 1.5em;
+    }
+    .chart-wrapper {
+      width: 100%;
+      height: 300px;
+    }
+    #chart {
+      width: 100%;
+      height: 100%;
     }
   </style>
 </head>
@@ -62,7 +76,9 @@
       </label>
     </div>
 
-    <div id="chart" style="height: 350px;"></div>
+    <div class="chart-wrapper">
+      <div id="chart"></div>
+    </div>
   </div>
 
   <script>
@@ -86,9 +102,8 @@
         line: { shape: 'spline', color: '#2b7cff' },
         name: valueType === 'close' ? 'Price (USD)' : 'Market Cap (USD)',
         hovertemplate:
-                    '%{x|%d %b %Y}<br>' +
-                    (valueType === 'close' ? '💰 %{y:$,.2f}' : '📊 %{y:$,.2f}') + '<extra></extra>'
-
+          '%{x|%d %b %Y}<br>' +
+          (valueType === 'close' ? '💰 %{y:$,.2f}' : '📊 %{y:$,.2f}') + '<extra></extra>'
       };
 
       const layout = {
@@ -103,10 +118,11 @@
         }
       };
 
-      Plotly.newPlot('chart', [trace], layout, { responsive: true });
+      const config = { responsive: true };
+
+      Plotly.newPlot('chart', [trace], layout, config);
     }
 
-    // Load CSV and parse it
     Papa.parse('data.csv', {
       download: true,
       header: true,
@@ -117,10 +133,10 @@
       }
     });
 
-    // Add event listeners
     document.getElementById('valueType').addEventListener('change', updateChart);
     document.getElementById('startDate').addEventListener('change', updateChart);
     document.getElementById('endDate').addEventListener('change', updateChart);
   </script>
 </body>
 </html>
+
