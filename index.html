@@ -167,8 +167,8 @@
     }
 
     document.getElementById('valueType').addEventListener('change', updateChart);
-    document.getElementById('startDate').addEventListener('change', updateChart);
-    document.getElementById('endDate').addEventListener('change', updateChart);
+    startYearSelect.addEventListener('change', updateChart);
+    endYearSelect.addEventListener('change', updateChart);
 
     // Initial plot
     updateChart();
