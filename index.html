@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>Diamond Market Chart</title>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <style>
     html, body {
       margin: 0;
@@ -70,17 +69,18 @@
       <label>
         Metric:
         <select id="valueType">
-          <option value="close">Price (USD)</option>
-          <option value="marketCap">Market Cap (USD)</option>
+          <option value="Production">Production (USD/CT)</option>
+          <option value="Import">Import (USD/CT)</option>
+          <option value="Export">Export (USD/CT)</option>
         </select>
       </label>
       <label>
         From:
-        <input type="date" id="startDate" value="2013-12-20">
+        <input type="date" id="startDate" value="2013-01-01">
       </label>
       <label>
         To:
-        <input type="date" id="endDate" value="2025-04-17">
+        <input type="date" id="endDate" value="2024-12-31">
       </label>
     </div>
 
@@ -90,7 +90,20 @@
   </div>
 
   <script>
-    let rawData = [];
+    const rawData = [
+      { year: "2013-01-01", Production: 120, Import: 150, Export: 140 },
+      { year: "2014-01-01", Production: 130, Import: 160, Export: 145 },
+      { year: "2015-01-01", Production: 125, Import: 155, Export: 150 },
+      { year: "2016-01-01", Production: 135, Import: 165, Export: 152 },
+      { year: "2017-01-01", Production: 140, Import: 170, Export: 160 },
+      { year: "2018-01-01", Production: 145, Import: 175, Export: 162 },
+      { year: "2019-01-01", Production: 150, Import: 180, Export: 165 },
+      { year: "2020-01-01", Production: 140, Import: 170, Export: 158 },
+      { year: "2021-01-01", Production: 155, Import: 185, Export: 172 },
+      { year: "2022-01-01", Production: 160, Import: 190, Export: 175 },
+      { year: "2023-01-01", Production: 165, Import: 195, Export: 180 },
+      { year: "2024-01-01", Production: 170, Import: 200, Export: 185 }
+    ];
 
     function updateChart() {
       const valueType = document.getElementById('valueType').value;
@@ -98,20 +111,20 @@
       const end = new Date(document.getElementById('endDate').value);
 
       const filtered = rawData.filter(d => {
-        const date = new Date(d.timeOpen);
+        const date = new Date(d.year);
         return date >= start && date <= end;
       });
 
       const trace = {
-        x: filtered.map(d => d.timeOpen),
-        y: filtered.map(d => parseFloat(d[valueType])),
+        x: filtered.map(d => d.year),
+        y: filtered.map(d => d[valueType]),
         type: 'scatter',
-        mode: 'lines',
+        mode: 'lines+markers',
         line: { shape: 'spline', color: '#2b7cff' },
-        name: valueType === 'close' ? 'Price (USD)' : 'Market Cap (USD)',
+        name: valueType,
         hovertemplate:
-          '%{x|%d %b %Y}<br>' +
-          (valueType === 'close' ? '💰 %{y:$,.2f}' : '📊 %{y:$,.2f}') + '<extra></extra>'
+          '%{x|%Y}<br>' +
+          `${valueType}: %{y:$,.2f} USD/CT<extra></extra>`
       };
 
       const layout = {
@@ -120,11 +133,11 @@
         plot_bgcolor: '#142940',
         font: { color: '#f0f0f0' },
         yaxis: {
-          title: valueType === 'close' ? 'Price (USD)' : 'Market Cap (USD)',
+          title: 'USD per Carat',
           gridcolor: '#3d566e'
         },
         xaxis: {
-          title: 'Date',
+          title: 'Year',
           gridcolor: '#3d566e'
         }
       };
@@ -134,20 +147,12 @@
       Plotly.newPlot('chart', [trace], layout, config);
     }
 
-    Papa.parse('data.csv', {
-      download: true,
-      header: true,
-      dynamicTyping: true,
-      complete: function(results) {
-        rawData = results.data.filter(d => d.timeOpen && d.close && d.marketCap);
-        updateChart();
-      }
-    });
-
     document.getElementById('valueType').addEventListener('change', updateChart);
     document.getElementById('startDate').addEventListener('change', updateChart);
     document.getElementById('endDate').addEventListener('change', updateChart);
+
+    // Initial plot
+    updateChart();
   </script>
 </body>
 </html>
-
